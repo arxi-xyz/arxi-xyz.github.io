@@ -38,7 +38,7 @@
 
 html {
   font-family: var(--font-primary);
-  font-size: 16px;
+  font-size: 22px;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -70,9 +70,9 @@ body {
 
 main {
   width: 100%;
-  max-width: 640px;
+  max-width: 800px;
   margin: 0 auto;
-  padding: 2rem 0;
+  padding: 2rem 1rem;
   position: relative;
   overflow-x: hidden;
 }

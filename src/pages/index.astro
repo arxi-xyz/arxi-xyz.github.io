@@ -21,6 +21,13 @@ const formatDate = (date: Date | undefined) => {
   });
 };
 
+const formatNumericDate = (date: Date | undefined) => {
+  if (!date) return "";
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const year = date.getFullYear();
+  return `${month}/${year}`;
+};
+
 const posts = await getCollection("blog", ({ data }: CollectionEntry<"blog">) => {
   return import.meta.env.PROD ? !data.draft : true;
 });
@@ -33,12 +40,25 @@ const latestPosts = posts
 
 const experiences = await getCollection("experience");
 const sortedExperiences = experiences.sort(
-  (a: CollectionEntry<"experience">, b: CollectionEntry<"experience">) =>
-    b.data.startDate.getTime() - a.data.startDate.getTime()
+  (a: CollectionEntry<"experience">, b: CollectionEntry<"experience">) => {
+    // Current jobs first
+    if (a.data.current && !b.data.current) return -1;
+    if (!a.data.current && b.data.current) return 1;
+    // Then by start date (newest first)
+    return b.data.startDate.getTime() - a.data.startDate.getTime();
+  }
 );
 
-const projects = await getCollection("projects");
-const featuredProjects = projects.filter((project: CollectionEntry<"projects">) => project.data.featured).slice(0, 3);
+const getTypeStyle = (type: string) => {
+  const styles: Record<string, string> = {
+    "full-time": "background: rgba(34, 197, 94, 0.15); color: rgb(134, 239, 172);",
+    "part-time": "background: rgba(59, 130, 246, 0.15); color: rgb(147, 197, 253);",
+    "contract": "background: rgba(249, 115, 22, 0.15); color: rgb(253, 186, 116);",
+    "freelance": "background: rgba(168, 85, 247, 0.15); color: rgb(216, 180, 254);",
+    "internship": "background: rgba(236, 72, 153, 0.15); color: rgb(249, 168, 212);",
+  };
+  return styles[type] || "background: rgba(255, 255, 255, 0.1); color: inherit;";
+};
 ---
 
 <BaseLayout title={`${site.name} - Portfolio`} description={site.introduction}>
@@ -58,6 +78,42 @@ const featuredProjects = projects.filter((project: CollectionEntry<"projects">) 
           </div>
         )
       }
+    </section>
+
+    <section class="section">
+      <div class="section-header">
+        <h2>{site.sections.experience.title}</h2>
+      </div>
+      <div class="content-list">
+        {
+          sortedExperiences.map((exp) => (
+            <article>
+              <div class="exp-header">
+                <div class="company-info">
+                  <img src={exp.data.logo} alt="" class="company-logo" />
+                  <span class="company-title">{exp.data.title}</span>
+                </div>
+                <div class="exp-meta">
+                  {exp.data.type && (
+                    <span class="employment-type" style={getTypeStyle(exp.data.type)}>{exp.data.type}</span>
+                  )}
+                  <time>
+                    {formatNumericDate(exp.data.startDate)} - {exp.data.current ? "Present" : formatNumericDate(exp.data.endDate)}
+                  </time>
+                </div>
+              </div>
+              <p class="muted-text">{exp.data.description}</p>
+              {exp.data.techs && (
+                <div class="tags">
+                  {exp.data.techs.map((tech) => (
+                    <span>{tech}</span>
+                  ))}
+                </div>
+              )}
+            </article>
+          ))
+        }
+      </div>
     </section>
 
     <Section>
@@ -81,81 +137,28 @@ const featuredProjects = projects.filter((project: CollectionEntry<"projects">) 
         }
       </ContentList>
     </Section>
-
-    <section class="section">
-      <div class="section-header">
-        <h2>{site.sections.projects.title}</h2>
-        <a href="/projects">{site.sections.projects.viewAllText}</a>
-      </div>
-      <ContentList>
-        {
-          featuredProjects.map((project) => (
-            <article>
-              <div class="title-row">
-                <a href={project.data.url} target="_blank" rel="noopener noreferrer">
-                  {project.data.title}
-                </a>
-              </div>
-              <p class="muted-text">{project.data.description}</p>
-              {project.data.techs && (
-                <div class="tags">
-                  {project.data.techs.map((tech) => (
-                    <span>{tech}</span>
-                  ))}
-                </div>
-              )}
-            </article>
-          ))
-        }
-      </ContentList>
-    </section>
-
-    <section class="section">
-      <div class="section-header">
-        <h2>{site.sections.experience.title}</h2>
-        <a href="/experience">{site.sections.experience.viewAllText}</a>
-      </div>
-      <div class="content-list">
-        {
-          sortedExperiences.slice(0, 2).map((exp) => (
-            <article>
-              <div class="title-row">
-                <div class="company-info">
-                  <img src={exp.data.logo} alt="" class="company-logo" />
-                  <span>{exp.data.title}</span>
-                </div>
-                <time>
-                  {formatDate(exp.data.startDate)} - {exp.data.current ? "Present" : formatDate(exp.data.endDate)}
-                </time>
-              </div>
-              <p class="muted-text">{exp.data.description}</p>
-            </article>
-          ))
-        }
-      </div>
-    </section>
   </Container>
 </BaseLayout>
 
 <style>
   main {
     width: 100%;
-    max-width: 640px;
+    max-width: 800px;
     margin: 0 auto;
-    padding: 2rem 0;
+    padding: 2rem 1rem;
   }
 
   .hero {
-    padding: 4rem 0;
+    padding: 2rem 0 1rem 0;
   }
 
   .introduction {
-    margin: 1.5rem 0;
+    margin: 1rem 0;
     opacity: 0.9;
   }
 
   .section {
-    margin: 4rem 0;
+    margin: 2rem 0;
   }
 
   .section-header {
@@ -166,18 +169,40 @@ const featuredProjects = projects.filter((project: CollectionEntry<"projects">) 
     opacity: 0.7;
   }
 
-  .title-row {
+  .content-list {
     display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    gap: 1rem;
-    font-size: var(--text-sm);
+    flex-direction: column;
+    gap: 2rem;
+  }
+
+  .content-list article {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .exp-header {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
   }
 
   .company-info {
     display: flex;
     align-items: center;
     gap: 0.75rem;
+  }
+
+  .company-title {
+    font-size: var(--text-sm);
+    font-weight: 500;
+  }
+
+  .exp-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: var(--text-xs);
   }
 
   .company-logo {
@@ -192,15 +217,27 @@ const featuredProjects = projects.filter((project: CollectionEntry<"projects">) 
     white-space: nowrap;
   }
 
+  .employment-type {
+    font-size: var(--text-xs);
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    font-weight: 500;
+    text-transform: capitalize;
+  }
+
   .tags {
     display: flex;
-    gap: 0.75rem;
-    margin-top: 0.5rem;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.25rem;
   }
 
   .tags span {
     font-size: var(--text-xs);
-    opacity: 0.5;
+    background: rgba(255, 255, 255, 0.08);
+    padding: 0.2rem 0.6rem;
+    border-radius: 4px;
+    color: var(--text-muted);
   }
 
   .social-links {

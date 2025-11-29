@@ -6,7 +6,7 @@ A modern, minimalist portfolio website built with Astro and deployed on Cloudfla
 
 ## Overview
 
-This is a personal portfolio website for ByteKai, a Software Engineer and Curious Tinkerer. The site showcases blog posts, technical notes, project work, and professional experience in a clean, fast-loading format.
+This is a personal portfolio website for Ahmadreza Sharif, a Software Engineer and Curious Tinkerer. The site showcases blog posts, technical notes, project work, and professional experience in a clean, fast-loading format.
 
 
 

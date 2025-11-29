@@ -1,16 +1,12 @@
 {
   "home": {
-    "name": "ByteKai",
-    "title": "Software Engineer & Curious Tinkerer",
-    "introduction": "I’m constantly learning and evolving. I love diving into new ideas and finding creative ways to solve problems.",
+    "name": "Ahmadreza Sharif",
+    "title": "Software Engineer & Curious Tinker",
+    "introduction": "I’m constantly learning and evolving. I love diving into new ideas and finding creative ways to solve problems. Specially Devops and Backend Development.",
     "sections": {
       "blog": {
-        "title": "Writing",
-        "viewAllText": "View all posts"
-      },
-      "projects": {
-        "title": "Projects",
-        "viewAllText": "View all projects"
+        "title": "Blog",
+        "viewAllText": "View all articles"
       },
       "experience": {
         "title": "Experience",
@@ -20,11 +16,11 @@
     "socialLinks": [
       {
         "platform": "GitHub",
-        "url": "https://github.com/bytekai"
+        "url": "https://github.com/arxi-xyz"
       },
       {
-        "platform": "Twitter",
-        "url": "https://x.com/byteekai"
+        "platform": "Linkedin",
+        "url": "https://linkedin.com/in/ahmadreza-sharif/"
       }
     ]
   }

@@ -4,7 +4,7 @@ export type NavigationItem = {
 };
 
 export const SITE = {
-    name: "ByteKai",
+    name: "Ahmadreza Sharif",
     title: "Software Engineer & Curious Tinkerer",
     description: "Personal portfolio and blog",
     url: "https://bytekai.dev",
@@ -17,15 +17,13 @@ export const NAVIGATION: {
     main: [
         { name: "Home", path: "/" },
         { name: "Blog", path: "/blog" },
-        { name: "Notes", path: "/notes" },
-        { name: "Bookmarks", path: "/bookmarks" }
+        { name: "Notes", path: "/notes" }
     ],
 } as const;
 
 export const CONTENT = {
     postsPerPage: 10,
     recentPostsLimit: 3,
-    featuredProjectsLimit: 3,
 } as const;
 
 export const META = {

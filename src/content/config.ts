@@ -26,20 +26,8 @@ const experience = defineCollection({
         startDate: z.coerce.date(),
         endDate: z.coerce.date().optional(),
         current: z.boolean().optional().default(false),
-    })
-});
-
-const projects = defineCollection({
-    loader: glob({
-        pattern: "**/*.md",
-        base: "./src/content/projects"
-    }),
-    schema: z.object({
-        title: z.string(),
-        description: z.string(),
-        url: z.string().url(),
-        featured: z.boolean().optional().default(false),
         techs: z.array(z.string()).optional(),
+        type: z.enum(["full-time", "part-time", "contract", "freelance", "internship"]).optional(),
     })
 });
 
@@ -51,10 +39,6 @@ const site = defineCollection({
         introduction: z.string(),
         sections: z.object({
             blog: z.object({
-                title: z.string(),
-                viewAllText: z.string(),
-            }),
-            projects: z.object({
                 title: z.string(),
                 viewAllText: z.string(),
             }),
@@ -84,27 +68,9 @@ const notes = defineCollection({
     })
 });
 
-const bookmarks = defineCollection({
-    loader: glob({
-        pattern: "**/*.md",
-        base: "./src/content/bookmarks"
-    }),
-    schema: z.object({
-        title: z.string(),
-        type: z.enum(["article", "book", "video"]),
-        author: z.string(),
-        url: z.string().url(),
-        publishedAt: z.coerce.date(),
-        createdAt: z.coerce.date(),
-        description: z.string().optional(),
-    })
-});
-
 export const collections = {
     blog,
     experience,
-    projects,
     site,
     notes,
-    bookmarks,
 }; 

@@ -1,6 +1,6 @@
 import type { CollectionEntry } from 'astro:content';
 
-export type ContentItem = CollectionEntry<'blog'> | CollectionEntry<'notes'> | CollectionEntry<'bookmarks'>;
+export type ContentItem = CollectionEntry<'blog'> | CollectionEntry<'notes'>;
 
 export function sortContentByDate(content: ContentItem[]): ContentItem[] {
     return content.sort((a, b) => {
