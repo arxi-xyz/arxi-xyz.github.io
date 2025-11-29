@@ -6,7 +6,8 @@ startDate: "2024-10-01"
 endDate: "2025-08-31"
 current: false
 type: full-time
-techs: ["Laravel", "PHP", "Docker", "PostgreSQL", "REST APIs", "Agile", "Ci/Cd", "Gilab Server", "Nginx"]
+primaryTechs: ["Laravel", "PHP", "Docker"]
+techs: ["PostgreSQL", "Elasticsearch", "Microservice", "REST APIs"]
 ---
 
 

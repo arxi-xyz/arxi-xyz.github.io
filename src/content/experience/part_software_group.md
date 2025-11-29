@@ -6,5 +6,6 @@ startDate: "2024-08-01"
 endDate: "2024-09-30"
 current: false
 type: internship
-techs: ["Node.js", "Express", "JavaScript", "Microservices", "Redis", "Gateway Systems", "Agile"]
+primaryTechs: ["Node.js", "Express", "JavaScript"]
+techs: ["Microservices", "Redis", "Gateway Systems", "Agile"]
 ---

@@ -103,9 +103,12 @@ const getTypeStyle = (type: string) => {
                 </div>
               </div>
               <p class="muted-text">{exp.data.description}</p>
-              {exp.data.techs && (
+              {(exp.data.primaryTechs || exp.data.techs) && (
                 <div class="tags">
-                  {exp.data.techs.map((tech) => (
+                  {exp.data.primaryTechs?.map((tech) => (
+                    <span class="primary-tech">{tech}</span>
+                  ))}
+                  {exp.data.techs?.map((tech) => (
                     <span>{tech}</span>
                   ))}
                 </div>
@@ -238,6 +241,13 @@ const getTypeStyle = (type: string) => {
     padding: 0.2rem 0.6rem;
     border-radius: 4px;
     color: var(--text-muted);
+  }
+
+  .tags span.primary-tech {
+    background: rgba(234, 179, 8, 0.15);
+    color: rgb(253, 224, 71);
+    border: 1px solid rgba(234, 179, 8, 0.3);
+    font-weight: 500;
   }
 
   .social-links {

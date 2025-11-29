@@ -6,5 +6,7 @@ startDate: "2025-09-01"
 endDate: null
 current: true
 type: part-time
-techs: ["Laravel", "PHP", "Docker", "PostgreSQL", "REST APIs", "Agile", "Nginx"]
+primaryTechs: ["Laravel", "PHP"]
+techs: ["Docker", "PostgreSQL", "REST APIs", "Agile", "Nginx"]
 ---
+

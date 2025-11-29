@@ -27,6 +27,7 @@ const experience = defineCollection({
         endDate: z.coerce.date().optional(),
         current: z.boolean().optional().default(false),
         techs: z.array(z.string()).optional(),
+        primaryTechs: z.array(z.string()).optional(),
         type: z.enum(["full-time", "part-time", "contract", "freelance", "internship"]).optional(),
     })
 });
