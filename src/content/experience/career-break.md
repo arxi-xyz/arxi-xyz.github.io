@@ -7,5 +7,5 @@ endDate: null
 current: true
 type: "full-time"
 primaryTechs: ["Golang","Docker"]
-techs: ["Bash", "Python", "Keycloak", "HAProxy", "Nginx", "Docker Swarm", "Traefik", "Ansible", "Golang", "Clean Architecture", "Docker", "Github Actions"]
+techs: ["Bash", "Python", "Keycloak", "HAProxy", "Nginx", "Docker Swarm", "Traefik", "Ansible", "Clean Architecture", "Github Actions"]
 ---
