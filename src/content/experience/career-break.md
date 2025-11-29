@@ -5,6 +5,7 @@ description: "Currently focusing on strengthening DevOps and backend (Golang) sk
 startDate: "2025-08-31"
 endDate: null
 current: true
+type: "full-time"
 primaryTechs: ["Golang","Docker"]
 techs: ["Bash", "Python", "Keycloak", "HAProxy", "Nginx", "Docker Swarm", "Traefik", "Ansible", "Golang", "Clean Architecture", "Docker", "Github Actions"]
 ---
