@@ -7,7 +7,7 @@ endDate: "2025-08-31"
 current: false
 type: full-time
 primaryTechs: ["Laravel", "PHP", "Docker"]
-techs: ["PostgreSQL", "Elasticsearch", "Microservice", "REST APIs"]
+techs: ["PostgreSQL", "Elasticsearch", "Microservice", "REST APIs", "Redis"]
 ---
 
 

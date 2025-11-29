@@ -7,5 +7,5 @@ endDate: "2024-06-30"
 current: false
 type: "full-time"
 primaryTechs: ["Laravel", "PHP", "Docker"]
-techs: ["PostgreSQL", "REST APIs", "Scrum", "Agile"]
+techs: ["PostgreSQL", "REST APIs", "Scrum", "Agile", "Redis"]
 ---

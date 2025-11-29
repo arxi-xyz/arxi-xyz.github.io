@@ -7,6 +7,6 @@ endDate: null
 current: true
 type: part-time
 primaryTechs: ["Laravel", "PHP"]
-techs: ["Docker", "PostgreSQL", "REST APIs", "Agile", "Nginx"]
+techs: ["Docker", "PostgreSQL", "REST APIs", "Agile", "Nginx" , "Redis"]
 ---
 
