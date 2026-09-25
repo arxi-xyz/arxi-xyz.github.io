@@ -74,6 +74,7 @@ main {
   margin: 0 auto;
   padding: 2rem 1rem;
   position: relative;
+  z-index: 1;
   overflow-x: hidden;
 }
 
@@ -109,53 +110,57 @@ body::after {
   animation: noise 8s steps(10) infinite;
 }
 
-body::before {
-  content: "";
-  position: absolute;
-  top: -5vh;
-  left: 0;
-  right: 0;
-  height: 100vh;
-  background: radial-gradient(
-    circle at 65% -20%,
-    color-mix(in srgb, var(--glow-color) 100%, transparent),
-    transparent 55%
-  );
-  mask-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='2.5' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%' height='100%' filter='url(%23noise)'/%3E%3C/svg%3E");
-  -webkit-mask-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='2.5' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%' height='100%' filter='url(%23noise)'/%3E%3C/svg%3E");
-  opacity: 0.8;
-  z-index: -1;
+.page-background {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
   pointer-events: none;
-  filter: blur(60px) contrast(1.1);
-  mix-blend-mode: normal;
-  transform: translateZ(0);
-  backface-visibility: hidden;
-  perspective: 1000px;
-  will-change: transform;
+  overflow: hidden;
 }
 
-.bottom-glow {
+.page-background-glow {
   position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  height: 40vh;
-  background: radial-gradient(
-    ellipse at 50% 100%,
-    color-mix(in srgb, var(--glow-color) 100%, transparent),
-    transparent 65%
-  );
-  mask-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='2.5' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%' height='100%' filter='url(%23noise)'/%3E%3C/svg%3E");
-  -webkit-mask-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='2.5' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%' height='100%' filter='url(%23noise)'/%3E%3C/svg%3E");
-  opacity: 0.6;
-  z-index: -1;
+  width: min(900px, 120vw);
+  height: min(900px, 120vw);
+  border-radius: 50%;
   pointer-events: none;
-  filter: blur(20px) contrast(1.3);
-  mix-blend-mode: normal;
-  transform: translateZ(0);
-  backface-visibility: hidden;
-  perspective: 1000px;
+  filter: blur(100px);
+  opacity: 0.25;
   will-change: transform;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+  background: radial-gradient(
+    circle at center,
+    color-mix(in srgb, var(--glow-color) 100%, transparent) 0%,
+    color-mix(in srgb, var(--glow-color) 45%, transparent) 38%,
+    transparent 70%
+  );
+}
+
+.page-background-glow--top {
+  top: -18%;
+  right: -12%;
+  opacity: 0.28;
+}
+
+.page-background-glow--bottom {
+  bottom: -22%;
+  left: -8%;
+  width: min(820px, 110vw);
+  height: min(820px, 110vw);
+  opacity: 0.22;
+  background: radial-gradient(
+    circle at center,
+    color-mix(in srgb, var(--glow-color) 90%, transparent) 0%,
+    color-mix(in srgb, var(--glow-color) 35%, transparent) 42%,
+    transparent 72%
+  );
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-background-glow {
+    will-change: auto;
+  }
 }
 
 h1,

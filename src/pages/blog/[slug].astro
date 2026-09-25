@@ -2,111 +2,234 @@
 import { getCollection, render } from "astro:content";
 import type { GetStaticPaths } from "astro";
 import BaseLayout from "../../components/layout/BaseLayout.astro";
+import BackToBlog from "../../components/blog/BackToBlog.astro";
+import Breadcrumb from "../../components/blog/Breadcrumb.astro";
+import ReadingProgress from "../../components/blog/ReadingProgress.astro";
+import PostNav from "../../components/blog/PostNav.astro";
+import { formatDate } from "../../utils/date";
+import { formatReadingTime, getReadingTime } from "../../utils/readingTime";
 
 export const getStaticPaths = (async () => {
-  const posts = await getCollection("blog");
-  return posts.map((post) => ({
+  const posts = await getCollection("blog", ({ data }) => {
+    return import.meta.env.PROD ? !data.draft : true;
+  });
+
+  const sorted = posts.sort(
+    (a, b) => b.data.publishedAt.getTime() - a.data.publishedAt.getTime()
+  );
+
+  return sorted.map((post, index) => ({
     params: { slug: post.id },
-    props: { post },
+    props: {
+      post,
+      prev: sorted[index + 1]
+        ? { title: sorted[index + 1].data.title, href: `/blog/${sorted[index + 1].id}` }
+        : undefined,
+      next: sorted[index - 1]
+        ? { title: sorted[index - 1].data.title, href: `/blog/${sorted[index - 1].id}` }
+        : undefined,
+    },
   }));
 }) satisfies GetStaticPaths;
 
-const { post } = Astro.props;
+const { post, prev, next } = Astro.props;
 const { Content } = await render(post);
-
-const formatDate = (date: Date) => {
-  return date.toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
-};
+const readingTime = getReadingTime(post.body ?? "");
 ---
 
 <BaseLayout title={post.data.title} description={post.data.description}>
-  <article class="post">
-    <header>
-      <h1>{post.data.title}</h1>
-      <time datetime={post.data.publishedAt.toISOString()}>
-        {formatDate(post.data.publishedAt)}
-      </time>
+  <ReadingProgress />
+
+  <article class="article-page">
+    <header class="article-header">
+      <BackToBlog />
+      <Breadcrumb
+        items={[
+          { label: "Home", href: "/" },
+          { label: "Blog", href: "/blog" },
+          { label: post.data.title },
+        ]}
+      />
+      <h1 class="article-title">{post.data.title}</h1>
+      <p class="article-meta">
+        <time datetime={post.data.publishedAt.toISOString()}>
+          {formatDate(post.data.publishedAt)}
+        </time>
+        <span class="meta-sep" aria-hidden="true">·</span>
+        <span>{formatReadingTime(readingTime)}</span>
+      </p>
     </header>
-    <div class="content">
+
+    <div class="content" data-article-body>
       <Content />
     </div>
+
+    <PostNav prev={prev} next={next} />
   </article>
 </BaseLayout>
 
+<script>
+  function initCodeCopy() {
+    const blocks = document.querySelectorAll<HTMLElement>(".article-page .content pre");
+
+    blocks.forEach((pre) => {
+      if (pre.dataset.copyReady === "true") return;
+      pre.dataset.copyReady = "true";
+
+      const wrapper = document.createElement("div");
+      wrapper.className = "code-block";
+      pre.parentNode?.insertBefore(wrapper, pre);
+      wrapper.appendChild(pre);
+
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "copy-button";
+      button.textContent = "Copy";
+      button.setAttribute("aria-label", "Copy code to clipboard");
+      wrapper.appendChild(button);
+
+      button.addEventListener("click", async () => {
+        const code = pre.querySelector("code")?.textContent ?? pre.textContent ?? "";
+        let copied = false;
+
+        try {
+          if (navigator.clipboard?.writeText) {
+            await navigator.clipboard.writeText(code);
+            copied = true;
+          }
+        } catch {
+          copied = false;
+        }
+
+        if (!copied) {
+          const textarea = document.createElement("textarea");
+          textarea.value = code;
+          textarea.setAttribute("readonly", "");
+          textarea.style.position = "fixed";
+          textarea.style.opacity = "0";
+          document.body.appendChild(textarea);
+          textarea.select();
+          copied = document.execCommand("copy");
+          textarea.remove();
+        }
+
+        if (copied) {
+          button.textContent = "Copied";
+          button.classList.add("copied");
+          button.setAttribute("aria-label", "Code copied");
+        } else {
+          button.textContent = "Failed";
+        }
+
+        window.setTimeout(() => {
+          button.textContent = "Copy";
+          button.classList.remove("copied");
+          button.setAttribute("aria-label", "Copy code to clipboard");
+        }, 1600);
+      });
+    });
+  }
+
+  initCodeCopy();
+  document.addEventListener("astro:page-load", initCodeCopy);
+</script>
+
 <style>
-  main {
+  .article-page {
     width: 100%;
-    max-width: 640px;
+    max-width: 720px;
     margin: 0 auto;
-    padding: 2rem 1.5rem;
+    padding: 1.5rem 1.25rem 3rem;
   }
 
-  .post {
-    margin-top: 2rem;
+  .article-header {
+    margin-bottom: 2.25rem;
   }
 
-  header {
-    margin-bottom: 2rem;
+  .article-title {
+    margin: 0 0 0.75rem;
+    font-size: clamp(1.35rem, 4.2vw, 1.75rem);
+    line-height: 1.25;
+    letter-spacing: -0.045em;
   }
 
-  h1 {
-    margin-bottom: 0.5rem;
-  }
-
-  time {
+  .article-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.4rem;
+    margin: 0;
+    max-width: none;
     color: var(--text-muted);
     font-size: var(--text-sm);
+    letter-spacing: -0.02em;
+  }
+
+  .meta-sep {
+    opacity: 0.6;
   }
 
   .content {
-    line-height: 1.7;
+    line-height: 1.8;
+  }
+
+  .content :global(* + *) {
+    margin-top: 0;
   }
 
   .content :global(h2) {
-    margin-top: 2rem;
+    margin-top: 2.75rem;
     margin-bottom: 1rem;
   }
 
   .content :global(h3) {
-    margin-top: 1.5rem;
+    margin-top: 2.25rem;
+    margin-bottom: 0.85rem;
+  }
+
+  .content :global(h4) {
+    margin-top: 1.75rem;
     margin-bottom: 0.75rem;
   }
 
   .content :global(p) {
-    margin-bottom: 1.25rem;
+    margin-bottom: 1.45rem;
+    max-width: 100%;
+    line-height: 1.8;
   }
 
   .content :global(img) {
     border-radius: 0.5rem;
-    margin: 1.5rem 0;
+    margin: 2rem 0;
+    max-width: 100%;
+    height: auto;
   }
 
   .content :global(blockquote) {
     border-left: 3px solid var(--border-color);
-    padding-left: 1.5rem;
-    margin: 1.5rem 0;
+    padding-left: 1.25rem;
+    margin: 2rem 0;
     color: var(--text-muted);
   }
 
-  .content :global(pre) {
-    padding: 1rem;
-    border-radius: 0.5rem;
-    background: var(--hover-bg);
-    overflow-x: auto;
-    margin: 1.5rem 0;
+  .content :global(ul),
+  .content :global(ol) {
+    margin: 1.5rem 0 1.75rem;
+    padding-left: 1.35rem;
   }
 
-  .content :global(p) {
-    max-width: 100%;
+  .content :global(li) {
+    margin: 0.65rem 0;
+    line-height: 1.75;
   }
 
-  .content :global(code) {
-    font-family: var(--font-mono);
-    font-size: var(--text-sm);
+  .content :global(li > ul),
+  .content :global(li > ol) {
+    margin: 0.5rem 0;
+  }
+
+  .content :global(hr) {
+    margin: 2.5rem 0;
   }
 
   .content :global(a) {
@@ -114,19 +237,108 @@ const formatDate = (date: Date) => {
     text-underline-offset: 2px;
   }
 
-  .content :global(ul),
-  .content :global(ol) {
-    margin: 1rem 0;
-    padding-left: 1.5rem;
+  .content :global(a:focus-visible) {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--border-color);
+    border-radius: 0.15rem;
   }
 
-  .content :global(li) {
-    margin: 0.5rem 0;
+  .content :global(pre),
+  .content :global(.astro-code) {
+    margin: 0;
+    padding: 1rem 1.1rem;
+    border-radius: 0.5rem;
+    background: var(--hover-bg);
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    max-width: 100%;
+  }
+
+  .content :global(.code-block) {
+    position: relative;
+    margin: 2rem 0;
+    max-width: 100%;
+  }
+
+  .content :global(.copy-button) {
+    position: absolute;
+    top: 0.55rem;
+    right: 0.55rem;
+    z-index: 2;
+    padding: 0.28rem 0.55rem;
+    border: 1px solid var(--border-color);
+    border-radius: 0.35rem;
+    background: color-mix(in srgb, var(--bg-color) 82%, transparent);
+    color: var(--text-muted);
+    font-size: 0.7rem;
+    font-weight: 400;
+    letter-spacing: 0;
+    line-height: 1;
+    opacity: 0.72;
+    transition: opacity var(--transition-base), color var(--transition-base),
+      border-color var(--transition-base), background-color var(--transition-base);
+  }
+
+  .content :global(.copy-button:hover),
+  .content :global(.code-block:focus-within .copy-button) {
+    opacity: 1;
+    color: var(--text-color);
+  }
+
+  .content :global(.copy-button:focus-visible) {
+    outline: none;
+    opacity: 1;
+    box-shadow: 0 0 0 2px var(--border-color);
+  }
+
+  .content :global(.copy-button.copied) {
+    opacity: 1;
+    color: var(--text-color);
+    border-color: color-mix(in srgb, var(--link-color) 40%, var(--border-color));
+  }
+
+  .content :global(code) {
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+  }
+
+  .content :global(pre code),
+  .content :global(.astro-code code) {
+    font-size: var(--text-xs);
+    background: none;
+    padding: 0;
+  }
+
+  .content :global(:not(pre) > code) {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 0.15em 0.35em;
+    border-radius: 0.25rem;
+  }
+
+  .content :global(table) {
+    display: block;
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
   }
 
   @media (max-width: 640px) {
-    main {
-      padding: 1rem;
+    .article-page {
+      padding: 1rem 1rem 2.5rem;
+    }
+
+    .article-header {
+      margin-bottom: 1.75rem;
+    }
+
+    .content :global(.copy-button) {
+      opacity: 1;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .content :global(.copy-button) {
+      transition: none;
     }
   }
 </style>

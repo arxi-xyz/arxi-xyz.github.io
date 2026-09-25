@@ -1,0 +1,149 @@
+---
+interface Props {
+  href?: string;
+  label?: string;
+  ariaLabel?: string;
+}
+
+const {
+  href = "/blog",
+  label = "Back to Blog",
+  ariaLabel = "Page navigation",
+} = Astro.props;
+---
+
+<nav class="back-nav" aria-label={ariaLabel}>
+  <a href={href} class="back-link" data-smart-back>
+    <svg
+      class="back-icon"
+      width="16"
+      height="16"
+      viewBox="0 0 16 16"
+      fill="none"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <path
+        d="M10 3L5 8l5 5"
+        stroke="currentColor"
+        stroke-width="1.5"
+        stroke-linecap="round"
+        stroke-linejoin="round"></path>
+    </svg>
+    <span>{label}</span>
+  </a>
+</nav>
+
+<script>
+  const PREV_PATH_KEY = "site-prev-path";
+
+  function rememberCurrentPath() {
+    try {
+      sessionStorage.setItem(PREV_PATH_KEY, window.location.pathname);
+    } catch {
+      // Ignore storage failures
+    }
+  }
+
+  function getPreviousPath(): string | null {
+    try {
+      return sessionStorage.getItem(PREV_PATH_KEY);
+    } catch {
+      return null;
+    }
+  }
+
+  function referrerIsInternal(): boolean {
+    try {
+      return Boolean(
+        document.referrer && new URL(document.referrer).origin === window.location.origin
+      );
+    } catch {
+      return false;
+    }
+  }
+
+  function shouldUseHistoryBack(): boolean {
+    if (window.history.length <= 1) return false;
+
+    const previousPath = getPreviousPath();
+    if (previousPath && previousPath !== window.location.pathname) {
+      return true;
+    }
+
+    return referrerIsInternal();
+  }
+
+  function initSmartBack() {
+    document.querySelectorAll<HTMLAnchorElement>("[data-smart-back]").forEach((link) => {
+      if (link.dataset.bound === "true") return;
+      link.dataset.bound = "true";
+
+      link.addEventListener("click", (event) => {
+        if (shouldUseHistoryBack()) {
+          event.preventDefault();
+          window.history.back();
+        }
+      });
+    });
+  }
+
+  document.addEventListener("astro:before-preparation", rememberCurrentPath);
+  initSmartBack();
+  document.addEventListener("astro:page-load", initSmartBack);
+</script>
+
+<style>
+  .back-nav {
+    margin-bottom: 0.75rem;
+  }
+
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    min-height: 2.5rem;
+    padding: 0.25rem 0;
+    color: var(--text-muted);
+    font-size: var(--text-sm);
+    font-weight: 400;
+    letter-spacing: -0.02em;
+    text-decoration: none;
+    transition: color var(--transition-base), opacity var(--transition-base);
+  }
+
+  .back-link::after {
+    display: none;
+  }
+
+  .back-icon {
+    flex-shrink: 0;
+    opacity: 0.85;
+    transition: transform var(--transition-base);
+  }
+
+  .back-link:hover {
+    color: var(--text-color);
+  }
+
+  .back-link:hover .back-icon {
+    transform: translateX(-2px);
+  }
+
+  .back-link:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--border-color);
+    border-radius: 0.25rem;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .back-link,
+    .back-icon {
+      transition: none;
+    }
+
+    .back-link:hover .back-icon {
+      transform: none;
+    }
+  }
+</style>

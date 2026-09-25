@@ -76,10 +76,123 @@ const { title, description, image = "/default-og-image.jpg", canonicalURL = Astr
     </script>
   </head>
   <body>
-    <div class="top-glow" transition:persist></div>
+    <div class="page-background" aria-hidden="true" transition:persist="page-background">
+      <div class="page-background-glow page-background-glow--top" data-glow="top"></div>
+      <div class="page-background-glow page-background-glow--bottom" data-glow="bottom"></div>
+    </div>
     <main>
       <slot />
     </main>
-    <div class="bottom-glow" transition:persist></div>
+
+    <script>
+      const REDUCED_MOTION = window.matchMedia("(prefers-reduced-motion: reduce)");
+      const LERP = 0.06;
+      const SCROLL_Y_FACTOR = -0.08;
+      const SCROLL_X_AMP = 36;
+      const SCROLL_X_FREQ = 0.002;
+
+      const state = {
+        scrollY: 0,
+        startedAt: performance.now(),
+        top: { x: 0, y: 0 },
+        bottom: { x: 0, y: 0 },
+        rafId: 0,
+        running: false,
+      };
+
+      function getGlows() {
+        return {
+          top: document.querySelector('[data-glow="top"]'),
+          bottom: document.querySelector('[data-glow="bottom"]'),
+        };
+      }
+
+      function resetGlows() {
+        const { top, bottom } = getGlows();
+        if (top instanceof HTMLElement) top.style.transform = "translate3d(0, 0, 0)";
+        if (bottom instanceof HTMLElement) bottom.style.transform = "translate3d(0, 0, 0)";
+        state.top.x = 0;
+        state.top.y = 0;
+        state.bottom.x = 0;
+        state.bottom.y = 0;
+      }
+
+      function syncScroll() {
+        state.scrollY = window.scrollY || window.pageYOffset || 0;
+      }
+
+      function tick(now) {
+        if (!state.running) return;
+
+        const { top, bottom } = getGlows();
+        if (!(top instanceof HTMLElement) || !(bottom instanceof HTMLElement)) {
+          state.rafId = window.requestAnimationFrame(tick);
+          return;
+        }
+
+        const t = now - state.startedAt;
+        const scrollY = state.scrollY;
+
+        // Slow idle drift (periods ~18–25s)
+        const idleTopX = Math.sin((t / 22000) * Math.PI * 2) * 26;
+        const idleTopY = Math.cos((t / 18000) * Math.PI * 2) * 14;
+        const idleBottomX = Math.sin((t / 25000) * Math.PI * 2 + 1.2) * 22;
+        const idleBottomY = Math.cos((t / 20000) * Math.PI * 2 + 0.8) * 16;
+
+        // Scroll parallax (opposite Y) + subtle horizontal sine
+        const targetTopX = Math.sin(scrollY * SCROLL_X_FREQ) * SCROLL_X_AMP + idleTopX;
+        const targetTopY = scrollY * SCROLL_Y_FACTOR + idleTopY;
+        const targetBottomX =
+          Math.sin(scrollY * SCROLL_X_FREQ + Math.PI * 0.5) * (SCROLL_X_AMP * 0.75) + idleBottomX;
+        const targetBottomY = scrollY * (SCROLL_Y_FACTOR * 0.7) + idleBottomY;
+
+        state.top.x += (targetTopX - state.top.x) * LERP;
+        state.top.y += (targetTopY - state.top.y) * LERP;
+        state.bottom.x += (targetBottomX - state.bottom.x) * LERP;
+        state.bottom.y += (targetBottomY - state.bottom.y) * LERP;
+
+        top.style.transform = `translate3d(${state.top.x.toFixed(2)}px, ${state.top.y.toFixed(2)}px, 0)`;
+        bottom.style.transform = `translate3d(${state.bottom.x.toFixed(2)}px, ${state.bottom.y.toFixed(2)}px, 0)`;
+
+        state.rafId = window.requestAnimationFrame(tick);
+      }
+
+      function stop(reset = true) {
+        state.running = false;
+        if (state.rafId) {
+          window.cancelAnimationFrame(state.rafId);
+          state.rafId = 0;
+        }
+
+        const previous = window.__ambientGlowAbort;
+        if (previous instanceof AbortController) previous.abort();
+        if (reset) resetGlows();
+      }
+
+      function start() {
+        stop(false);
+        state.running = true;
+        syncScroll();
+
+        const abort = new AbortController();
+        window.addEventListener("scroll", syncScroll, { passive: true, signal: abort.signal });
+        window.addEventListener("resize", syncScroll, { signal: abort.signal });
+        window.__ambientGlowAbort = abort;
+
+        state.rafId = window.requestAnimationFrame(tick);
+      }
+
+      function initAmbientGlow() {
+        if (REDUCED_MOTION.matches) {
+          stop(true);
+          return;
+        }
+        start();
+      }
+
+      REDUCED_MOTION.addEventListener("change", initAmbientGlow);
+      initAmbientGlow();
+      document.addEventListener("astro:page-load", initAmbientGlow);
+    </script>
   </body>
 </html>

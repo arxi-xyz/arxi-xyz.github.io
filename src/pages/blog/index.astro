@@ -5,6 +5,8 @@ import BaseHero from "../../components/shared/BaseHero.astro";
 import ArticleCard from "../../components/ui/ArticleCard.astro";
 import Container from "../../components/ui/Container.astro";
 import ContentList from "../../components/shared/ContentList.astro";
+import BackToBlog from "../../components/blog/BackToBlog.astro";
+import Breadcrumb from "../../components/blog/Breadcrumb.astro";
 
 const posts = await getCollection("blog", ({ data }) => {
   return import.meta.env.PROD ? !data.draft : true;
@@ -15,7 +17,17 @@ const sortedPosts = posts.sort((a, b) => b.data.publishedAt.getTime() - a.data.p
 
 <BaseLayout title="Blog" description="Read my latest blog posts">
   <Container>
-    <BaseHero title="Blog" description="Read my latest blog posts" />
+    <header class="list-header">
+      <BackToBlog href="/" label="Back to Home" ariaLabel="Blog navigation" />
+      <Breadcrumb
+        items={[
+          { label: "Home", href: "/" },
+          { label: "Blog" },
+        ]}
+      />
+      <BaseHero title="Blog" description="Read my latest blog posts" />
+    </header>
+
     <ContentList>
       {
         sortedPosts.map((post) => (
@@ -30,3 +42,23 @@ const sortedPosts = posts.sort((a, b) => b.data.publishedAt.getTime() - a.data.p
     </ContentList>
   </Container>
 </BaseLayout>
+
+<style>
+  .list-header {
+    margin-bottom: 0.5rem;
+  }
+
+  .list-header :global(.hero) {
+    padding: 1.25rem 0 2.5rem;
+  }
+
+  .list-header :global(.breadcrumb) {
+    margin-bottom: 0.25rem;
+  }
+
+  @media (max-width: 640px) {
+    .list-header :global(.hero) {
+      padding: 1rem 0 2rem;
+    }
+  }
+</style>
